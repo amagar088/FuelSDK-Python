@@ -1,5 +1,7 @@
 import ET_Client
-from FuelSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_DataExtension_Row
+from FuelSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_DataExtension_Row, ET_DataExtension, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+myClient = ET_Client()
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -200,8 +202,41 @@ try:
         print 'RequestID: ' + str(getResponse.request_id)
         print 'Results Length: ' + str(len(getResponse.results))
 
-    # Asynchronous Soap request to perform DataExtensionRow POST
+    #Asynchronous Soap request to create DataExtension, POST method
     #############################################################
+
+    #Explicitly passing the parameter, RequestType & QueuePriority
+    createOptions = ET_CreateOptions(RequestType, QueuePriority)
+    createOptions.auth_stub = myClient
+    dataExtension = ET_DataExtension()
+    dataExtension.auth_stub = myClient
+    dataExtension.props = {"Name": NameOfDE, "CustomerKey": NameOfDE}
+    dataExtension.columns = [{"Name" : "Name", "FieldType" : "Text", "IsPrimaryKey" : "true", "MaxLength" : "100", "IsRequired" : "true"},{"Name" : "OtherField", "FieldType" : "Text"}]
+    dataExtension.createOptions = createOptions
+    results = dataExtension.post()
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results: ' + str(results.results)
+
+    #Asynchronous Soap request to delete DataExtension, Delete method
+    #################################################################
+
+    #Explicitly passing the parameter, RequestType & QueuePriority
+    deleteDataExtension = ET_DeleteOptions(RequestType, QueuePriority)
+    deleteDataExtension.auth_stub = myClient
+    dataExtension = ET_DataExtension()
+    dataExtension.auth_stub = myClient
+    dataExtension.props = {"CustomerKey": "DataExtension_1"}
+    dataExtension.delOptions = deleteDataExtension
+    results = dataExtension.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to add a row , DataExtensionRow POST
+    ################################################################
 
     dataExtensionRow = ET_DataExtension_Row()
     # Explicitly passing the parameter, RequestType and QueuePriority
@@ -212,10 +247,13 @@ try:
     dataExtensionRow.props = {"Field_1" : "Value_1", "Field_2" : "Value_2", "Field_3" : "Value_3"}
     dataExtensionRow.createOptions = createOptions
     results = dataExtensionRow.post()
-    print results.results
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results: ' + str(results.results)
 
-    # Asynchronous Soap request to perform DataExtensionRow PATCH
-    #############################################################
+    # Asynchronous Soap request to update arow in DataExtensionRow, PATCH method
+    ############################################################################
 
     dataExtensionRow = ET_DataExtension_Row()
     # Explicitly passing the parameter, RequestType and QueuePriority
@@ -227,8 +265,29 @@ try:
     dataExtensionRow.props = {"PrimaryKeyName": "key_Value", "Field_1": "Updated_Value_1", "Field_2": "Updated_Value_2"}
     dataExtensionRow.updateOptions = updateOptions
     results = dataExtensionRow.patch()
-    print results.results
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results: ' + str(results.results)
 
+    #Asynchronous Soap request to delete a row, DataExtensionRow Delete method
+    ###################################################################
+
+    #Explicitly passing the parameter, RequestType & QueuePriority
+    deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+    dataExtensionRow = ET_DataExtension_Row()
+    deleteOptions.auth_stub = myClient
+    dataExtensionRow.auth_stub = myClient
+    dataExtensionRow.CustomerKey = "CustomerKey"
+    # Here, Doing a delete and the props value must be a primary key.
+    # Value for this key must not be changed
+    dataExtensionRow.props = {"PrimaryKeyName": "key_Value"}
+    dataExtensionRow.delOptions = deleteOptions
+    results = dataExtensionRow.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results: ' + str(results.results)
 
 except Exception as e:
     print 'Caught exception: ' + str(e.message)

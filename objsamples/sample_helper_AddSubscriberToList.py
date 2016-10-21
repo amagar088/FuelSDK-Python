@@ -8,7 +8,7 @@ try:
 
     ## Example using AddSubscriberToList() method
     ## Typically this method will be used with a pre-existing list but for testing purposes one is being created.
-    
+
     # Create List 
     print '>>> Create List'
     postList = ET_Client.ET_List()
@@ -21,7 +21,7 @@ try:
     print 'Result Count: ' + str(len(postResponse.results))
     print 'Results: ' + str(postResponse.results)
     
-    if postResponse.status: 
+    if postResponse.status:
         
         newListID = postResponse.results[0]['NewID']
         # Adding Subscriber To a List
@@ -32,7 +32,8 @@ try:
         print 'Message: ' + str(AddSubResponse.message)
         print 'Result Count: ' + str(len(AddSubResponse.results))
         print 'Results: ' + str(AddSubResponse.results)
-                
+
+
         # Delete List
         print '>>> Delete List'
         deleteSub = ET_Client.ET_List()

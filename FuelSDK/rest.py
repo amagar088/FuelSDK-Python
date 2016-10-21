@@ -119,7 +119,7 @@ class ET_Describe(ET_Constructor):
 ##
 ########
 class ET_Configure(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None, update = False, delete = False):
+    def __init__(self, auth_stub, obj_type, props = None, update = False, delete = False, conOP=None):
         auth_stub.refresh_token()
 
         ws_configureRequest = auth_stub.soap_client.factory.create('ConfigureRequestMsg')
@@ -128,10 +128,15 @@ class ET_Configure(ET_Constructor):
             action = 'delete'
         elif update:
             action = 'update'
-        ws_configureRequest.Action = action
-        ws_configureRequest.Configurations = {'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
 
-        response = auth_stub.soap_client.service.Configure(None, ws_configureRequest)        
+        if conOP is None:
+         ws_configureRequest.Action = action
+         ws_configureRequest.Configurations = {'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
+         response = auth_stub.soap_client.service.Configure(None, ws_configureRequest)
+        else:
+          ws_configureRequest.Action = action
+          ws_configureRequest.Configurations = {'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
+          response = auth_stub.soap_client.service.Configure(self.parse_props_into_ws_object(auth_stub, conOP.obj_type, conOP.configOptions), ws_configureRequest)
 
         if response is not None:
             #self.message = 'Describe: ' + obj_type
@@ -143,7 +148,7 @@ class ET_Configure(ET_Constructor):
 ##
 ########
 class ET_Get(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None, search_filter = None, options = None):        
+    def __init__(self, auth_stub, obj_type, props = None, search_filter = None, options = None):
         auth_stub.refresh_token()
         
         if props is None:   #if there are no properties to retrieve for the obj_type then return a Description of obj_type
@@ -201,8 +206,8 @@ class ET_Get(ET_Constructor):
                     ws_retrieveRequest.Options[key] = value
 
         ws_retrieveRequest.ObjectType = obj_type
-        
-        response = auth_stub.soap_client.service.Retrieve(ws_retrieveRequest)       
+
+        response = auth_stub.soap_client.service.Retrieve(ws_retrieveRequest)
 
         if response is not None:
             super(ET_Get, self).__init__(response)
@@ -246,10 +251,13 @@ class ET_Patch(ET_Constructor):
 ##
 ########
 class ET_Delete(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None):
+    def __init__(self, auth_stub, obj_type, tcs, props = None, dOp = None):
         auth_stub.refresh_token()
-              
-        response = auth_stub.soap_client.service.Delete(None, self.parse_props_into_ws_object(auth_stub, obj_type, props))
+
+        if dOp is not None:
+          response = auth_stub.soap_client.service.Delete(self.parse_props_into_ws_object(auth_stub, dOp.obj_type, dOp.dOptions), self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+        else:
+          response = auth_stub.soap_client.service.Delete(None, self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
 
         if(response is not None):
             super(ET_Delete, self).__init__(response)
@@ -292,7 +300,7 @@ class ET_BaseObject(object):
 ########
 class ET_GetSupport(ET_BaseObject):
     obj_type = 'ET_GetSupport'   #should be overwritten by inherited class
-    
+
     def get(self, m_props = None, m_filter = None, m_options = None):
         props = self.props
         search_filter = self.search_filter
@@ -354,10 +362,9 @@ class ET_GetRest(ET_Constructor):
 class ET_PostRest(ET_Constructor):  
     def __init__(self, auth_stub, endpoint, payload):
         auth_stub.refresh_token()
-        
         headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
         r = requests.post(endpoint + '?access_token=' + auth_stub.authToken , data=json.dumps(payload), headers=headers)
-        
+
         obj = super(ET_PostRest, self).__init__(r, True)
         return obj
     
@@ -398,6 +405,8 @@ class ET_DeleteRest(ET_Constructor):
 class ET_CUDSupport(ET_GetSupport):
     createOptions = None
     updateOptions = None
+    delOptions = None
+    conOptions = None
     def __init__(self):
         super(ET_CUDSupport, self).__init__()
         
@@ -419,7 +428,8 @@ class ET_CUDSupport(ET_GetSupport):
         return obj
 
     def delete(self):
-        obj = ET_Delete(self.auth_stub, self.obj_type, self.props)
+        dOptions = self.delOptions
+        obj = ET_Delete(self.auth_stub, self.obj_type, self.props, None, dOptions)
         if obj is not None:
             self.last_request_id = obj.request_id
         return obj
@@ -516,7 +526,7 @@ class ET_CUDSupportRest(ET_GetSupportRest):
         super
     
     def post(self):
-        completeURL = self.endpoint 
+        completeURL = self.endpoint
         
         if self.props is not None and type(self.props) is dict:
             for k, v in self.props.iteritems():

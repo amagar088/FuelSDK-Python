@@ -30,12 +30,14 @@ class ET_ProfileAttribute():
         self.obj_type = 'PropertyDefinition'
         self.update = False
         self.delete = False
+        self.configOptions = None
 
     def post(self):       
-        obj = ET_Configure(self.auth_stub, self.obj_type, self.props, self.update, self.delete)
+        obj = ET_Configure(self.auth_stub, self.obj_type, self.props, self.update, self.delete, self.configOptions)
         if obj is not None:
             self.last_request_id = obj.request_id
         return obj
+
 
 ########
 ##
@@ -167,10 +169,30 @@ class ET_UpdateOptions(ET_CUDSupport):
     uOptions = None
 
     def __init__(self, requestType="Synchronous", queuePriority=None):
-        super(ET_UpdateOptions,self).__init__()
+        super(ET_UpdateOptions, self).__init__()
         self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx","RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
         self.obj_type = 'UpdateOptions'
         self.uOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+
+class ET_DeleteOptions(ET_CUDSupport):
+    sendResponseTo = None
+    dOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None):
+        super(ET_DeleteOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx","RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'DeleteOptions'
+        self.dOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+
+class ET_ConfigureOptions(ET_CUDSupport):
+    sendResponseTo = None
+    configOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None):
+        super(ET_ConfigureOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx", "RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'ConfigureOptions'
+        self.configOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
 
 class ET_Subscriber(ET_CUDSupport):
     def __init__(self):
@@ -362,7 +384,8 @@ class ET_DataExtension_Row(ET_CUDSupport):
         obj = ET_Patch(self.auth_stub, self.obj_type, currentProp, None, upExProp)
         return obj
     
-    def delete(self): 
+    def delete(self):
+        deExProp = self.delOptions
         self.getCustomerKey()
 
         if type(self.props) is list:
@@ -392,7 +415,7 @@ class ET_DataExtension_Row(ET_CUDSupport):
             currentProp['Keys'] = {}
             currentProp['Keys']['Key'] = currentFields
             
-        obj = ET_Delete(self.auth_stub, self.obj_type, currentProp)
+        obj = ET_Delete(self.auth_stub, self.obj_type, currentProp, None, deExProp)
         return obj
     
     def getCustomerKey(self):

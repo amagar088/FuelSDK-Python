@@ -1,5 +1,9 @@
 import ET_Client
-
+from FuelSDK.objects import  ET_Email, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+myClient = ET_Client()
+RequestType = "Asynchronous"
+QueuePriority = "High"/ "Low" / "Medium"
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -106,6 +110,58 @@ try:
     print 'MoreResults: ' + str(getResponse.more_results)
     print 'Results Length: ' + str(len(getResponse.results))
     print 'Results: ' + str(getResponse.results)
+
+    #Asynchronous Soap request to create Email, POST method
+    #######################################################
+
+    #Explicitly passing the parameter, RequestType & QueuePriority
+    createOptions = ET_CreateOptions(RequestType, QueuePriority)
+    createOptions.auth_stub = myClient
+    email = ET_Email()
+    email.auth_stub = myClient
+    email.props = {"CustomerKey" : NameOfTestEmail, "Name":NameOfTestEmail, "Subject" : "Created Using the PythonSDK", "HTMLBody": "<b>Some HTML Goes here</b>"}
+    email.createOptions = createOptions
+    results = email.post()
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to update Email, Patch method
+    #######################################################
+
+    # Explicitly passing the parameter, RequestType & QueuePriority
+    updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+    updateOptions.auth_stub = myClient
+    email = ET_Email()
+    email.auth_stub = myClient
+    email.props = {"CustomerKey" : NameOfTestEmail, "Name":NameOfTestEmail, "Subject" : "Created Using the PythonSDK", "HTMLBody": "<b>Some UPDATED HTML Goes here</b>"}
+    email.updateOptions = updateOptions
+    results = email.patch()
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to delete Email, Delete method
+    #######################################################
+
+    # Explicitly passing the parameter, RequestType & QueuePriority
+    deleOptions = ET_DeleteOptions(RequestType, QueuePriority)
+    deleOptions.auth_stub = myClient
+    email = ET_Email()
+    email.auth_stub = myClient
+    email.props = {"CustomerKey": NameOfTestEmail}
+    email.delOptions = deleOptions
+    results = email.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
 
 except Exception as e:
     print 'Caught exception: ' + e.message

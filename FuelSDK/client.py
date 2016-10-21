@@ -203,12 +203,13 @@ class ET_Client(object):
             raise Exception('Unable to determine stack using /platform/v1/tokenContext: ' + e.message)  
 
 
-    def AddSubscriberToList(self, emailAddress, listIDs, subscriberKey = None):
+    def AddSubscriberToList(self, emailAddress, listIDs, createOptions = None, updateOptions = None, subscriberKey = None):
         """
         add or update a subscriber with a list
         """
         newSub = ET_Subscriber()
         newSub.auth_stub = self
+        newSub.createOptions = createOptions
         lists = []
         
         for p in listIDs:
@@ -216,7 +217,7 @@ class ET_Client(object):
         
         newSub.props = {"EmailAddress" : emailAddress, "Lists" : lists}
         if subscriberKey is not None:
-            newSub.props['SubscriberKey']  = subscriberKey
+            newSub.props['SubscriberKey'] = subscriberKey
         
         # Try to add the subscriber
         postResponse = newSub.post()
@@ -224,21 +225,23 @@ class ET_Client(object):
         if not postResponse.status:
             # If the subscriber already exists in the account then we need to do an update.
             # Update Subscriber On List 
-            if postResponse.results[0]['ErrorCode'] == 12014:    
+            if postResponse.results[0]['ErrorCode'] == 12014:
+                newSub.updateOptions = updateOptions
                 patchResponse = newSub.patch()
                 return patchResponse
 
         return postResponse
     
 
-    def CreateDataExtensions(self, dataExtensionDefinitions):
+    def CreateDataExtensions(self, dataExtensionDefinitions, cDatEx=None):
         """
         write the data extension props to the web service
         """
         newDEs = ET_DataExtension()
         newDEs.auth_stub = self
                 
-        newDEs.props = dataExtensionDefinitions                     
+        newDEs.props = dataExtensionDefinitions
+        newDEs.createOptions = cDatEx
         postResponse = newDEs.post()        
         
         return postResponse

@@ -1,5 +1,9 @@
 import ET_Client
-
+from FuelSDK.objects import ET_List, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+RequestType = "Asynchronus"
+QueuePriority = "High" / "Low" / "Medium"
+myClient = ET_Client()
 try:
     debug = False   
     stubObj = ET_Client.ET_Client(False, debug) 
@@ -23,7 +27,7 @@ try:
     if postResponse.status and 'NewID' in postResponse.results[0]:
         
         newListID = postResponse.results[0]['NewID']
-    
+
         # Retrieve newly created List by ID
         print '>>> Retrieve newly created List'
         getList = ET_Client.ET_List()
@@ -89,6 +93,58 @@ try:
         print 'MoreResults: ' + str(getResponse.more_results)   
         print 'Results Length: ' + str(len(getResponse.results))
         print 'Results: ' + str(getResponse.results)
+
+        #Asynchronous Soap request to create List, POST method
+        ######################################################
+
+        #Explicitly passing the parameter , RequestType & QueuePriority
+        createOptions = ET_CreateOptions(RequestType, QueuePriority)
+        createOptions.auth_stub = myClient
+        list = ET_List()
+        list.auth_stub = myClient
+        list.props = {"ListName" : NewListName, "Description" : "This list was created with the PythonSDK", "Type" : "Private" }
+        list.createOptions = createOptions
+        results = list.post()
+        print 'Post Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Result Count: ' + str(len(results.results))
+        print 'Results: ' + str(results.results)
+
+        # Asynchronous Soap request to update List, Patch method
+        ######################################################
+
+        # Explicitly passing the parameter , RequestType & QueuePriority
+        updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+        updateOptions.auth_stub = myClient
+        list = ET_List()
+        list.auth_stub = myClient
+        list.props = {"ID" : newListID, "Description" : "I updated the description"}
+        list.updateOptions = updateOptions
+        results = list.patch()
+        print 'Patch Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Result Count: ' + str(len(results.results))
+        print 'Results: ' + str(results.results)
+
+        # Asynchronous Soap request to delete List, Delete method
+        ######################################################
+
+        # Explicitly passing the parameter , RequestType & QueuePriority
+        deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+        deleteOptions.auth_stub = myClient
+        list = ET_List()
+        list.auth_stub = myClient
+        list.props = {"ID" : newListID}
+        list.delOptions = deleteOptions
+        results = list.delete()
+        print 'Delete Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Results Length: ' + str(len(results.results))
+        print 'Results: ' + str(results.results)
+
 
 except Exception as e:
     print 'Caught exception: ' + str(e.message)

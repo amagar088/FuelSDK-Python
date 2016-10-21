@@ -1,5 +1,10 @@
 import ET_Client
 import uuid
+from FuelSDK.objects import ET_TriggeredSend, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+RequestType = "Asynchronus"
+QueuePriority = "High" / "Low" / "Medium"
+myClient = ET_Client()
 
 try:
     debug = False
@@ -98,7 +103,9 @@ try:
     print '>>> Create a TriggeredSend Definition'
     postTrig = ET_Client.ET_TriggeredSend()
     postTrig.auth_stub = stubObj
-    postTrig.props = {'CustomerKey' : TSNameForCreateThenDelete,'Name' : TSNameForCreateThenDelete, 'Email' : {"ID":"3113962"}, "SendClassification": {"CustomerKey": "2240"}}
+    postTrig.props = {'CustomerKey' : TSNameForCreateThenDelete,'Name' : TSNameForCreateThenDelete, 'Email' : {"ID":"3113962"}, "SendClassification": {"CustomerKey": "2240"},
+                      'List': {"ID": "ListID"}, 'AutoAddSubscriber': 'true', 'AutoUpdateSubscriber': 'true'}
+    #If you are not using ListID then, must use the sendSourceDataExtension
     postResponse = postTrig.post()
     print 'Post Status: ' + str(postResponse.status)
     print 'Code: ' + str(postResponse.code)
@@ -117,6 +124,106 @@ try:
     print 'Message: ' + str(deleteResponse.message)
     print 'Result Count: ' + str(len(deleteResponse.results))
     print 'Results: ' + str(deleteResponse.results)
+
+    #Asynchronous Soap request to pause an email, Patch method
+    ##########################################################
+
+    #Explicitly passing the parameter, RequestType & QueuePriority
+    updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+    updateOptions.auth_stub = myClient
+    triggeredSend = ET_TriggeredSend()
+    triggeredSend.auth_stub = myClient
+    triggeredSend.props = {"CustomerKey" : NameOfTestTS, "TriggeredSendStatus" :"Inactive"}
+    triggeredSend.updateOptions = updateOptions
+    results = triggeredSend.patch()
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to start an email, Patch method
+    ###########################################################
+
+    # Explicitly passing the parameter, RequestType & QueuePriority
+    updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+    updateOptions.auth_stub = myClient
+    triggeredSend = ET_TriggeredSend()
+    triggeredSend.auth_stub = myClient
+    triggeredSend.props = {"CustomerKey": NameOfTestTS, "TriggeredSendStatus": "Active"}
+    triggeredSend.updateOptions = updateOptions
+    results = triggeredSend.patch()
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to send an email with TriggereSend, send method
+    ###########################################################################
+
+    # Explicitly passing the parameter, RequestType & QueuePriority
+    triggeredSend = ET_TriggeredSend()
+    createOptions = ET_CreateOptions(RequestType, QueuePriority)
+    triggeredSend.auth_stub = myClient
+    createOptions.auth_stub = myClient
+    triggeredSend.props = {"CustomerKey": NameOfTestTS}
+    triggeredSend.subscribers = [{"EmailAddress": "xyz@exacttarget.com", "SubscriberKey": "exacttarget001"}]
+    triggeredSend.attributes = []
+    triggeredSend.createOptions = createOptions
+    results = triggeredSend.send()
+    print 'Send Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to delete an email with TriggeredSend, Delete method
+    ###########################################################################
+
+    # Explicitly passing the parameter, RequestType & QueuePriority
+    deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+    deleteOptions.auth_stub = myClient
+    triggeredSend = ET_TriggeredSend()
+    triggeredSend.auth_stub = myClient
+    triggeredSend.props = {'CustomerKey': NameOfTestTS}
+    triggeredSend.delOptions = deleteOptions
+    results = triggeredSend.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    #Asynchronous Soap request to create TriggeredSendDefinition, POST method
+    #########################################################################
+
+    #Explicitly passing the parameter , RequestType & QueuePriority
+    createOptions = ET_CreateOptions(RequestType, QueuePriority)
+    createOptions.auth_stub = myClient
+    triggeredSend = ET_TriggeredSend()
+    triggeredSend.auth_stub = myClient
+    triggeredSend.props = {}
+    triggeredSend.props["Name"] = "SDKTriggeredSend_1"
+    triggeredSend.props["CustomerKey"] = "ET_TriggeredSendDefinition_1"
+    triggeredSend.props["Description"] = "SDK Created TriggeredSend_1"
+    triggeredSend.props["Email"] = {"ID": "3262349"}
+    # SendClassification will must be define
+    triggeredSend.props["SendClassification"] = {"CustomerKey": "Default Commercial"}
+    # SendSourceDataExtension nust needed if, not using ListID
+    # triggeredsend.props["SendSourceDataExtension"] = {"CustomerKey" : "triggeredSendDE"}
+    # If you are using List Id then, you must have to specify AutoAddSubscriber or AutoUpdateSubscriber
+    # Or even both
+    triggeredSend.props["List"] = {"ID": "2091673"}
+    triggeredSend.props["AutoAddSubscribers"] = "true"
+    triggeredSend.props["AutoUpdateSubscribers"] = "true"
+    triggeredSend.createOptions = createOptions
+    results = triggeredSend.post()
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
 
 except Exception as e:
     print 'Caught exception: ' + e.message

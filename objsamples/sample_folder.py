@@ -1,5 +1,9 @@
-from .ET_Client.py import ET_Client
-
+import ET_Client
+from FuelSDk.objects import ET_Folder, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+RequestType = "Asynchronus"
+QueuePriority = "High" / "Low" / "Medium"
+myClient = ET_Client()
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -124,6 +128,58 @@ try:
     print 'MoreResults: ' + str(getResponse.more_results)    
     print 'Results Length: ' + str(len(getResponse.results))
     print 'Results: ' + str(getResponse.results)
+
+    #Asynchronous Soap request to create Folder, POST method
+    ########################################################
+
+    #Explicitly passing the parameter RequesType & QueuePriority
+    createOptions = ET_CreateOptions(RequestType, QueuePriority)
+    createOptions.auth_stub = myClient
+    folder = ET_Folder()
+    folder.auth_stub = myClient
+    folder.props = {"CustomerKey" :  NameOfTestFolder, "Name" :  NameOfTestFolder, "Description" :  NameOfTestFolder, "ContentType":  "EMAIL", "ParentFolder" :  {"ID" :  ParentIDForEmail}}
+    folder.createOptions = createOptions
+    results = folder.post()
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    #Asynchronous Soap request to update Folder, Patch method
+    #########################################################
+
+    # Explicitly passing the parameter RequesType & QueuePriority
+    updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+    updateOptions.auth_stub = myClient
+    folder = ET_Folder()
+    folder.auth_stub = myClient
+    folder.props = {"CustomerKey" :  NameOfTestFolder, "Name" :  NameOfTestFolder, "Description" :  "Updated Description"}
+    folder.updateOptions = updateOptions
+    results = folder.patch()
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to delete Folder, Delete method
+    #########################################################
+
+    # Explicitly passing the parameter RequesType & QueuePriority
+    deleteOptions = ET_DeleteOptions
+    deleteOptions.auth_stub = myClient
+    folder = ET_Folder()
+    folder.auth_stub = myClient
+    folder.props = {"CustomerKey" : NameOfTestFolder}
+    folder.delOptions = deleteOptions
+    results = folder.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
 
 except Exception as e:
     print 'Caught exception: ' + str(e.message)

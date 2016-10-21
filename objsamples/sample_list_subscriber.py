@@ -1,5 +1,9 @@
 import ET_Client
-
+from FuelSDK.objects import ET_Subscriber, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+RequestType = "Asynchronus"
+QueuePriority = "High" / "Low" / "Medium"
+myClient = ET_Client()
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -81,6 +85,60 @@ try:
         print 'Message: ' + str(deleteResponse.message)
         print 'Results Length: ' + str(len(deleteResponse.results))
         print 'Results: ' + str(deleteResponse.results)
+
+
+        #Asynchronous Soap request to create Subscriber, POST method
+        ############################################################
+
+        #Explicitly passing the parameter, RequestType & QueuePriority
+        createOptions = ET_CreateOptions(RequestType, QueuePriority)
+        createOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"EmailAddress": "xyz@exacttarget.com", "SubscriberKey": "xyz@exacttarget", "Status": "Active"}
+        subscriber.createOptions = createOptions
+        results = subscriber.post()
+        print 'Post Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Result Count: ' + str(len(results.results))
+        print 'Results: ' + str(results.results)
+
+        # Asynchronous Soap request to update Subscriber, Patch method
+        ############################################################
+
+        # Explicitly passing the parameter, RequestType & QueuePriority
+        updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+        updateOptions = ET_UpdateOptions()
+        updateOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"Status": "Unsubscribed", "EmailAddress": "xyzUpdated@exacttarget.com", "SubscriberKey": "xyz@exacttarget"}
+        subscriber.updateOptions = updateOptions
+        results = subscriber.patch()
+        print 'Patch Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Result Count: ' + str(len(results.results))
+        print 'Results: ' + str(results.results)
+
+        #Asynchronous Soap request to delete Subscriber, Delete method
+        ###############################################################
+
+        #Explicitly pasinf the parameter, RequestType & QueuePriority
+        deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+        deleteOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"SubscriberKey": "xyz@exacttarget"}
+        subscriber.delOptions = deleteOptions
+        results = subscriber.delete()
+        print 'Delete Status: ' + str(results.status)
+        print 'Code: ' + str(results.code)
+        print 'Message: ' + str(results.message)
+        print 'Results Length: ' + str(len(results.results))
+        print 'Results: ' + str(deleteResponse.results)
+
 
 except Exception as e:
     print 'Caught exception: ' + e.message

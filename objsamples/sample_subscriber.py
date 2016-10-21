@@ -1,6 +1,7 @@
 import ET_Client
-from FuelSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_Subscriber
-
+from FuelSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_Subscriber, ET_DeleteOptions
+from FuelSDK.client import ET_Client
+myClient = ET_Client()
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -81,7 +82,7 @@ try:
     getSub = ET_Client.ET_Subscriber()
     getSub.auth_stub = stubObj
     getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
-    getSub.search_filter = {'Property' : 'SubscriberKey','SimpleOperator' : 'equals','Value' : SubscriberTestEmail};
+    getSub.search_filter = {'Property' : 'SubscriberKey','SimpleOperator' : 'equals', 'Value' : SubscriberTestEmail};
     getResponse = getSub.get()
     print 'Retrieve Status: ' + str(getResponse.status)
     print 'Code: ' + str(getResponse.code)
@@ -133,7 +134,11 @@ try:
     subscriber.props['Attributes'] = [{'Name': 'First Name', 'Value': 'John'}]
     subscriber.createOptions = createOptions
     results = subscriber.post()
-    print results.results
+    print 'Post Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
 
     """
     Asynchronous Soap request to perform Subscirber PATCH
@@ -149,7 +154,30 @@ try:
     subscriber.props = {"Status": "Active", "EmailAddress": "xyz@exacttarget.com", "SubscriberKey": "exacrtarget001"}
     subscriber.updateOptions = updateOptions
     results = subscriber.patch()
-    print results.results
+    print 'Patch Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Result Count: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+    # Asynchronous Soap request to delete Subscriber, Delete method
+    ###############################################################
+
+    # Explicitly pasinf the parameter, RequestType & QueuePriority
+    deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+    deleteOptions.auth_stub = myClient
+    subscriber = ET_Subscriber()
+    subscriber.auth_stub = myClient
+    subscriber.props = {"SubscriberKey": "xyz@exacttarget"}
+    subscriber.delOptions = deleteOptions
+    results = subscriber.delete()
+    print 'Delete Status: ' + str(results.status)
+    print 'Code: ' + str(results.code)
+    print 'Message: ' + str(results.message)
+    print 'Results Length: ' + str(len(results.results))
+    print 'Results: ' + str(results.results)
+
+
 
 
 except Exception as e:
