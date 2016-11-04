@@ -158,21 +158,21 @@ class ET_CreateOptions(ET_CUDSupport):
     sendResponseTo = None
     cOptions = None
 
-    def __init__(self, requestType="Synchronous", queuePriority=None):
+    def __init__(self, requestType="Synchronous", queuePriority=None, saveOptions=None):
         super(ET_CreateOptions, self).__init__()
         self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx", "RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
         self.obj_type = 'CreateOptions'
-        self.cOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+        self.cOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority, "SaveOptions": saveOptions}
 
 class ET_UpdateOptions(ET_CUDSupport):
     sendResponseTo = None
     uOptions = None
 
-    def __init__(self, requestType="Synchronous", queuePriority=None):
+    def __init__(self, requestType="Synchronous", queuePriority=None, saveAction=None):
         super(ET_UpdateOptions, self).__init__()
         self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx","RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
         self.obj_type = 'UpdateOptions'
-        self.uOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+        self.uOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority, "SaveOptions": saveAction}
 
 class ET_DeleteOptions(ET_CUDSupport):
     sendResponseTo = None
@@ -193,6 +193,18 @@ class ET_ConfigureOptions(ET_CUDSupport):
         self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx", "RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
         self.obj_type = 'ConfigureOptions'
         self.configOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+
+class ET_SaveOption(ET_CUDSupport):
+    saveOptions = None
+    properties = None
+
+    def __init__(self, saveAction="Default"):
+        super(ET_SaveOption, self).__init__()
+        self.obj_type = 'SaveOption'
+        self.saveAction = {"SaveAction": saveAction, "PropertyName": "*" }
+        self.saveOptions = {"SaveOption": self.saveAction}
+        self.saveOption = {"SaveOptions": saveAction}
+
 
 class ET_Subscriber(ET_CUDSupport):
     def __init__(self):
@@ -315,6 +327,7 @@ class ET_DataExtension_Row(ET_CUDSupport):
         
     def post(self):
         cDataECtensionRow = self.createOptions
+        #saveOptions = self.saveOptions
         self.getCustomerKey()
         originalProps = self.props
         

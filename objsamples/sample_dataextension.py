@@ -1,6 +1,6 @@
 import ET_Client
-from FuelSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_DataExtension_Row, ET_DataExtension, ET_DeleteOptions
-from FuelSDK.client import ET_Client
+from MarketingCloudSDK.objects import ET_CreateOptions, ET_UpdateOptions, ET_DataExtension_Row, ET_DataExtension, ET_DeleteOptions
+from MarketingCloudSDK.client import ET_Client
 myClient = ET_Client()
 try:
     debug = False

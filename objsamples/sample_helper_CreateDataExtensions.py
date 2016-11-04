@@ -1,6 +1,6 @@
 import ET_Client
-from FuelSDK.client import ET_Client
-from FuelSDK.objects import ET_CreateOptions, ET_DeleteOptions, ET_DataExtension
+from MarketingCloudSDK.client import ET_Client
+from MarketingCloudSDK.objects import ET_CreateOptions, ET_DeleteOptions, ET_DataExtension
 RequestType = "Asynchronous"
 QueuePriority = "High" / "Medium" / "Low"
 myClient = ET_Client()

@@ -362,7 +362,7 @@ class ET_GetRest(ET_Constructor):
 class ET_PostRest(ET_Constructor):  
     def __init__(self, auth_stub, endpoint, payload):
         auth_stub.refresh_token()
-        headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
+        headers = {'content-type' : 'application/json', 'user-agent' : 'MarketingCloudSDK-Python'}
         r = requests.post(endpoint + '?access_token=' + auth_stub.authToken , data=json.dumps(payload), headers=headers)
 
         obj = super(ET_PostRest, self).__init__(r, True)
@@ -377,7 +377,7 @@ class ET_PatchRest(ET_Constructor):
     def __init__(self, auth_stub, endpoint, payload):
         auth_stub.refresh_token()
         
-        headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
+        headers = {'content-type' : 'application/json', 'user-agent' : 'MarketingCloudSDK-Python'}
         r = requests.patch(endpoint + '?access_token=' + auth_stub.authToken , data=json.dumps(payload), headers=headers)
         
         obj = super(ET_PatchRest, self).__init__(r, True)
@@ -407,6 +407,7 @@ class ET_CUDSupport(ET_GetSupport):
     updateOptions = None
     delOptions = None
     conOptions = None
+    saveOptions = None
     def __init__(self):
         super(ET_CUDSupport, self).__init__()
         
