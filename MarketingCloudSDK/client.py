@@ -11,7 +11,7 @@ import suds.wsse
 from suds.sax.element import Element
 
 
-from FuelSDK.objects import ET_DataExtension,ET_Subscriber
+from MarketingCloudSDK.objects import ET_DataExtension,ET_Subscriber
 
 
 class ET_Client(object):
@@ -47,8 +47,8 @@ class ET_Client(object):
 
         ## Read the config information out of config.python
         config = configparser.RawConfigParser()
-        if os.path.exists(os.path.expanduser('~/.fuelsdk/config.python')):
-            config.read(os.path.expanduser('~/.fuelsdk/config.python'))
+        if os.path.exists(os.path.expanduser('~/.marketingcloudsdk/config.python')):
+            config.read(os.path.expanduser('~/.marketingcloudsdk/config.python'))
         else:
             config.read('config.python')
 
@@ -56,29 +56,29 @@ class ET_Client(object):
             self.client_id = params['clientid']
         elif config.has_option('Web Services', 'clientid'):
             self.client_id = config.get('Web Services', 'clientid')
-        elif 'FUELSDK_CLIENT_ID' in os.environ:
-            self.client_id = os.environ['FUELSDK_CLIENT_ID']
+        elif 'MARKETINGCLOUDSDK_CLIENT_ID' in os.environ:
+            self.client_id = os.environ['MARKETINGCLOUDSDK_CLIENT_ID']
 
         if params is not None and 'clientsecret' in params:
             self.client_secret = params['clientsecret']
         elif config.has_option('Web Services', 'clientsecret'):
             self.client_secret = config.get('Web Services', 'clientsecret')
-        elif 'FUELSDK_CLIENT_SECRET' in os.environ:
-            self.client_secret = os.environ['FUELSDK_CLIENT_SECRET']
+        elif 'MARKETINGCLOUDSDK_CLIENT_SECRET' in os.environ:
+            self.client_secret = os.environ['MARKETINGCLOUDSDK_CLIENT_SECRET']
 
         if params is not None and 'appsignature' in params:
             self.appsignature = params['appsignature']
         elif config.has_option('Web Services', 'appsignature'):
             self.appsignature = config.get('Web Services', 'appsignature')
-        elif 'FUELSDK_APP_SIGNATURE' in os.environ:
-            self.appsignature = os.environ['FUELSDK_APP_SIGNATURE']
+        elif 'MARKETINGCLOUDSDK_APP_SIGNATURE' in os.environ:
+            self.appsignature = os.environ['MARKETINGCLOUDSDK_APP_SIGNATURE']
 
         if params is not None and 'defaultwsdl' in params:
             wsdl_server_url = params['defaultwsdl']
         elif config.has_option('Web Services', 'defaultwsdl'):
             wsdl_server_url = config.get('Web Services', 'defaultwsdl')
-        elif 'FUELSDK_DEFAULT_WSDL' in os.environ:
-            wsdl_server_url = os.environ['FUELSDK_DEFAULT_WSDL']
+        elif 'MARKETINGCLOUDSDK_DEFAULT_WSDL' in os.environ:
+            wsdl_server_url = os.environ['MARKETINGCLOUDSDK_DEFAULT_WSDL']
         else:
             wsdl_server_url = 'https://webservice.exacttarget.com/etframework.wsdl'
 
@@ -86,17 +86,17 @@ class ET_Client(object):
             self.auth_url = params['authenticationurl']
         elif config.has_option('Web Services', 'authenticationurl'):
             self.auth_url = config.get('Web Services', 'authenticationurl')
-        elif 'FUELSDK_AUTH_URL' in os.environ:
-            self.auth_url = os.environ['FUELSDK_AUTH_URL']
+        elif 'MARKETINGCLOUDSDK_AUTH_URL' in os.environ:
+            self.auth_url = os.environ['MARKETINGCLOUDSDK_AUTH_URL']
         else:
-            self.auth_url = 'https://auth.exacttargetapis.com/v1/requestToken?legacy=1'
+            self.auth_url = 'https://auth.exacttargetapis.com/v1/requestToken'
 
         if params is not None and "wsdl_file_local_loc" in params:
             wsdl_file_local_location = params["wsdl_file_local_loc"]
         elif config.has_option("Web Services", "wsdl_file_local_loc"):
             wsdl_file_local_location = config.get("Web Services", "wsdl_file_local_loc")
-        elif "FUELSDK_WSDL_FILE_LOCAL_LOC" in os.environ:
-            wsdl_file_local_location = os.environ["FUELSDK_WSDL_FILE_LOCAL_LOC"]
+        elif "MARKETINGCLOUDSDK_WSDL_FILE_LOCAL_LOC" in os.environ:
+            wsdl_file_local_location = os.environ["MARKETINGCLOUDSDK_WSDL_FILE_LOCAL_LOC"]
         else:
             wsdl_file_local_location = None
 
@@ -154,22 +154,13 @@ class ET_Client(object):
     def build_soap_client(self):
         if self.endpoint is None: 
             self.endpoint = self.determineStack()
-        
-        self.authObj = {'oAuth' : {'oAuthToken' : self.internalAuthToken}}          
-        self.authObj['attributes'] = { 'oAuth' : { 'xmlns' : 'http://exacttarget.com' }}                        
 
         self.soap_client = suds.client.Client(self.wsdl_file_url, faults=False, cachingpolicy=1)
         self.soap_client.set_options(location=self.endpoint)
 
-        element_oAuth = Element('oAuth', ns=('etns', 'http://exacttarget.com'))
-        element_oAuthToken = Element('oAuthToken').setText(self.internalAuthToken)
-        element_oAuth.append(element_oAuthToken)
-        self.soap_client.set_options(soapheaders=(element_oAuth))               
-        
-        security = suds.wsse.Security()
-        token = suds.wsse.UsernameToken('*', '*')
-        security.tokens.append(token)
-        self.soap_client.set_options(wsse=security)             
+        element_oAuth = Element('fueloauth', ns=('etns', 'http://exacttarget.com'))
+        element_oAuth = Element('fueloauth').setText(self.authToken)
+        self.soap_client.set_options(soapheaders=(element_oAuth))
         
 
     def refresh_token(self, force_refresh = False):
@@ -178,7 +169,7 @@ class ET_Client(object):
         """
         #If we don't already have a token or the token expires within 5 min(300 seconds), get one
         if (force_refresh or self.authToken is None or (self.authTokenExpiration is not None and time.time() + 300 > self.authTokenExpiration)):
-            headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
+            headers = {'content-type' : 'application/json', 'user-agent' : 'MarketingCloudSDK-Python'}
             if (self.authToken is None):
                 payload = {'clientId' : self.client_id, 'clientSecret' : self.client_secret, 'accessType': 'offline'}
             else:
@@ -194,7 +185,7 @@ class ET_Client(object):
             
             self.authToken = tokenResponse['accessToken']
             self.authTokenExpiration = time.time() + tokenResponse['expiresIn']
-            self.internalAuthToken = tokenResponse['legacyToken']
+            #self.internalAuthToken = tokenResponse['legacyToken']
             if 'refreshToken' in tokenResponse:
                 self.refreshKey = tokenResponse['refreshToken']
         
@@ -206,7 +197,7 @@ class ET_Client(object):
         find the correct url that data request web calls should go against for the token we have.
         """
         try:
-            r = requests.get('https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=' + self.authToken, {'user-agent' : 'FuelSDK-Python'})
+            r = requests.get('https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=' + self.authToken, {'user-agent' : 'MarketingCloudSDK-Python'})
             contextResponse = r.json()
             if('url' in contextResponse):
                 return str(contextResponse['url'])
@@ -241,16 +232,16 @@ class ET_Client(object):
                 return patchResponse
 
         return postResponse
-    
 
-    def CreateDataExtensions(self, dataExtensionDefinitions):
+    def CreateDataExtensions(self, dataExtensionDefinitions, cDatEx=None):
         """
         write the data extension props to the web service
         """
         newDEs = ET_DataExtension()
         newDEs.auth_stub = self
-                
-        newDEs.props = dataExtensionDefinitions                     
-        postResponse = newDEs.post()        
-        
+
+        newDEs.props = dataExtensionDefinitions
+        newDEs.createOptions = cDatEx
+        postResponse = newDEs.post()
+
         return postResponse

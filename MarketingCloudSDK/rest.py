@@ -117,7 +117,7 @@ class ET_Describe(ET_Constructor):
 ##
 ########
 class ET_Configure(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None, update = False, delete = False):
+    def __init__(self, auth_stub, obj_type, props=None, update=False, delete=False, conOP=None):
         auth_stub.refresh_token()
 
         ws_configureRequest = auth_stub.soap_client.factory.create('ConfigureRequestMsg')
@@ -126,10 +126,17 @@ class ET_Configure(ET_Constructor):
             action = 'delete'
         elif update:
             action = 'update'
-        ws_configureRequest.Action = action
-        ws_configureRequest.Configurations = {'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
-
-        response = auth_stub.soap_client.service.Configure(None, ws_configureRequest)        
+        if conOP is None:
+            ws_configureRequest.Action = action
+            ws_configureRequest.Configurations = {
+                'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
+            response = auth_stub.soap_client.service.Configure(None, ws_configureRequest)
+        else:
+            ws_configureRequest.Action = action
+            ws_configureRequest.Configurations = {
+                'Configuration': self.parse_props_into_ws_object(auth_stub, obj_type, props)}
+            response = auth_stub.soap_client.service.Configure(
+                self.parse_props_into_ws_object(auth_stub, conOP.obj_type, conOP.configOptions), ws_configureRequest)
 
         if response is not None:
             #self.message = 'Describe: ' + obj_type
@@ -211,10 +218,14 @@ class ET_Get(ET_Constructor):
 ##
 ########
 class ET_Post(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None):
+    def __init__(self, auth_stub, obj_type, tcs, props=None, createOp=None):
         auth_stub.refresh_token()
-        response = auth_stub.soap_client.service.Create(None, self.parse_props_into_ws_object(auth_stub, obj_type, props))
-        if(response is not None):
+        if createOp is not None:
+            response = auth_stub.soap_client.service.Create(self.parse_props_into_ws_object(auth_stub, createOp.obj_type, createOp.cOptions), self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+        else:
+            response = auth_stub.soap_client.service.Create(None, self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+
+        if (response is not None):
             super(ET_Post, self).__init__(response)
 
 ########
@@ -223,12 +234,15 @@ class ET_Post(ET_Constructor):
 ##
 ########
 class ET_Patch(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None):
+    def __init__(self, auth_stub, obj_type, tcs, props=None, updateOp=None):
         auth_stub.refresh_token()
-              
-        response = auth_stub.soap_client.service.Update(None, self.parse_props_into_ws_object(auth_stub, obj_type, props))
 
-        if(response is not None):
+        if updateOp is not None:
+            response = auth_stub.soap_client.service.Update(self.parse_props_into_ws_object(auth_stub, updateOp.obj_type, updateOp.uOptions), self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+        else:
+            response = auth_stub.soap_client.service.Update(None, self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+
+        if (response is not None):
             super(ET_Patch, self).__init__(response)
 
 ########
@@ -237,12 +251,15 @@ class ET_Patch(ET_Constructor):
 ##
 ########
 class ET_Delete(ET_Constructor):
-    def __init__(self, auth_stub, obj_type, props = None):
+    def __init__(self, auth_stub, obj_type, tcs, props=None, dOp=None):
         auth_stub.refresh_token()
-              
-        response = auth_stub.soap_client.service.Delete(None, self.parse_props_into_ws_object(auth_stub, obj_type, props))
 
-        if(response is not None):
+        if dOp is not None:
+            response = auth_stub.soap_client.service.Delete(self.parse_props_into_ws_object(auth_stub, dOp.obj_type, dOp.dOptions), self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+        else:
+            response = auth_stub.soap_client.service.Delete(None, self.parse_props_into_ws_object(auth_stub, obj_type, tcs))
+
+        if (response is not None):
             super(ET_Delete, self).__init__(response)
 
 ########
@@ -346,7 +363,7 @@ class ET_PostRest(ET_Constructor):
     def __init__(self, auth_stub, endpoint, payload):
         auth_stub.refresh_token()
         
-        headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
+        headers = {'content-type' : 'application/json', 'user-agent' : 'MarketingCloudSDK-Python'}
         r = requests.post(endpoint + '?access_token=' + auth_stub.authToken , data=json.dumps(payload), headers=headers)
         
         obj = super(ET_PostRest, self).__init__(r, True)
@@ -361,7 +378,7 @@ class ET_PatchRest(ET_Constructor):
     def __init__(self, auth_stub, endpoint, payload):
         auth_stub.refresh_token()
         
-        headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python'}
+        headers = {'content-type' : 'application/json', 'user-agent' : 'MarketingCloudSDK-Python'}
         r = requests.patch(endpoint + '?access_token=' + auth_stub.authToken , data=json.dumps(payload), headers=headers)
         
         obj = super(ET_PatchRest, self).__init__(r, True)
@@ -387,28 +404,36 @@ class ET_DeleteRest(ET_Constructor):
 ##
 ########
 class ET_CUDSupport(ET_GetSupport):
+    createOptions = None
+    updateOptions = None
+    delOptions = None
+    conOptions = None
+    saveOptions = None
     
     def __init__(self):
         super(ET_CUDSupport, self).__init__()
         
     def post(self):
+        cOptions = self.createOptions
         if self.extProps is not None:
             for k, v in self.extProps.iteritems():
                 self.props[k.capitalize] = v
-        
-        obj = ET_Post(self.auth_stub, self.obj_type, self.props)
+
+        obj = ET_Post(self.auth_stub, self.obj_type, self.props, None, cOptions)
         if obj is not None:
             self.last_request_id = obj.request_id
         return obj
     
     def patch(self):
-        obj = ET_Patch(self.auth_stub, self.obj_type, self.props)
+        uOptions = self.updateOptions
+        obj = ET_Patch(self.auth_stub, self.obj_type, self.props, None, uOptions)
         if obj is not None:
             self.last_request_id = obj.request_id
         return obj
 
     def delete(self):
-        obj = ET_Delete(self.auth_stub, self.obj_type, self.props)
+        dOptions = self.delOptions
+        obj = ET_Delete(self.auth_stub, self.obj_type, self.props, None, dOptions)
         if obj is not None:
             self.last_request_id = obj.request_id
         return obj

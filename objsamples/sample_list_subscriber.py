@@ -1,5 +1,8 @@
-import ET_Client
-
+from MarketingCloudSDK.client import ET_Client
+from MarketingCloudSDK.objects import  ET_Subscriber, ET_CreateOptions, ET_UpdateOptions, ET_DeleteOptions, ET_List, ET_List_Subscriber
+myClient = ET_Client()
+RequestType = "Asynchronous"
+QueuePriority = "High\Low\Medium"
 try:
     debug = False
     stubObj = ET_Client.ET_Client(False, debug)
@@ -11,16 +14,16 @@ try:
     SubscriberTestEmail = "PythonSDKListSubscriber@bh.exacttarget.com"
     
     # Create List 
-    print '>>> Create List'
-    postList = ET_Client.ET_List()
+    print ('>>> Create List')
+    postList = ET_List()
     postList.auth_stub = stubObj
     postList.props = {"ListName" : NewListName, "Description" : "This list was created with the PythonSDK", "Type" : "Private" }
     postResponse = postList.post()
-    print 'Post Status: ' + str(postResponse.status)
-    print 'Code: ' + str(postResponse.code)
-    print 'Message: ' + str(postResponse.message)
-    print 'Result Count: ' + str(len(postResponse.results))
-    print 'Results: ' + str(postResponse.results)
+    print ('Post Status: ' + str(postResponse.status))
+    print ('Code: ' + str(postResponse.code))
+    print ('Message: ' + str(postResponse.message))
+    print ('Result Count: ' + str(len(postResponse.results)))
+    print ('Results: ' + str(postResponse.results))
     
     
     # Make sure the list created correctly before 
@@ -29,59 +32,113 @@ try:
         newListID = postResponse.results[0]['NewID']
     
         # Create Subscriber On List 
-        print '>>> Create Subscriber On List'
-        postSub = ET_Client.ET_Subscriber()
+        print ('>>> Create Subscriber On List')
+        postSub = ET_Subscriber()
         postSub.auth_stub = stubObj
         postSub.props = {"EmailAddress" : SubscriberTestEmail, "Lists" :[{"ID" : newListID}]}
         postResponse = postSub.post()
-        print 'Post Status: ' + str(postResponse.status)
-        print 'Code: ' + str(postResponse.code)
-        print 'Message: ' + str(postResponse.message)
-        print 'Result Count: ' + str(len(postResponse.results))
-        print 'Results: ' + str(postResponse.results)
+        print ('Post Status: ' + str(postResponse.status))
+        print ('Code: ' + str(postResponse.code))
+        print ('Message: ' + str(postResponse.message))
+        print ('Result Count: ' + str(len(postResponse.results)))
+        print ('Results: ' + str(postResponse.results))
        
         if postResponse.status is False: 
             # If the subscriber already exists in the account then we need to do an update.
             # Update Subscriber On List 
             if postResponse.results[0]['ErrorCode'] == 12014:     
                 # Update Subscriber to add to List
-                print '>>> Update Subscriber to add to List'
-                patchSub = ET_Client.ET_Subscriber()
+                print ('>>> Update Subscriber to add to List')
+                patchSub = ET_Subscriber()
                 patchSub.auth_stub = stubObj
                 patchSub.props = {"EmailAddress" : SubscriberTestEmail, "Lists" :[{"ID" : newListID}]}
                 patchResponse = patchSub.patch()
-                print 'Patch Status: ' + str(patchResponse.status)
-                print 'Code: ' + str(patchResponse.code)
-                print 'Message: ' + str(patchResponse.message)
-                print 'Result Count: ' + str(len(patchResponse.results))
-                print 'Results: ' + str(patchResponse.results)
+                print ('Patch Status: ' + str(patchResponse.status))
+                print ('Code: ' + str(patchResponse.code))
+                print ('Message: ' + str(patchResponse.message))
+                print ('Result Count: ' + str(len(patchResponse.results)))
+                print ('Results: ' + str(patchResponse.results))
         
         # Retrieve all Subscribers on the List
-        print '>>> Retrieve all Subscribers on the List'
-        getListSubs = ET_Client.ET_List_Subscriber()
+        print ('>>> Retrieve all Subscribers on the List')
+        getListSubs = ET_List_Subscriber()
         getListSubs.auth_stub = stubObj
         getListSubs.props = ["ObjectID","SubscriberKey","CreatedDate","Client.ID","Client.PartnerClientKey","ListID","Status"]
         getListSubs.search_filter = {'Property' : 'ListID','SimpleOperator' : 'equals','Value' : newListID}
         getResponse = getListSubs.get()
-        print 'Retrieve Status: ' + str(getResponse.status)
-        print 'Code: ' + str(getResponse.code)
-        print 'Message: ' + str(getResponse.message)
-        print 'MoreResults: ' + str(getResponse.more_results)
-        print 'Results Length: ' + str(len(getResponse.results))
-        print 'Results: ' + str(getResponse.results)
+        print ('Retrieve Status: ' + str(getResponse.status))
+        print ('Code: ' + str(getResponse.code))
+        print ('Message: ' + str(getResponse.message))
+        print ('MoreResults: ' + str(getResponse.more_results))
+        print ('Results Length: ' + str(len(getResponse.results)))
+        print ('Results: ' + str(getResponse.results))
         
         # Delete List
-        print '>>> Delete List'
-        deleteSub = ET_Client.ET_List()
+        print ('>>> Delete List')
+        deleteSub = ET_List()
         deleteSub.auth_stub = stubObj
         deleteSub.props = {"ID" : newListID}
         deleteResponse = deleteSub.delete()
-        print 'Delete Status: ' + str(deleteResponse.status)
-        print 'Code: ' + str(deleteResponse.code)
-        print 'Message: ' + str(deleteResponse.message)
-        print 'Results Length: ' + str(len(deleteResponse.results))
-        print 'Results: ' + str(deleteResponse.results)
+        print ('Delete Status: ' + str(deleteResponse.status))
+        print ('Code: ' + str(deleteResponse.code))
+        print ('Message: ' + str(deleteResponse.message))
+        print ('Results Length: ' + str(len(deleteResponse.results)))
+        print ('Results: ' + str(deleteResponse.results))
+
+        # Asynchronous Soap request to create Subscriber, POST method
+        ############################################################
+
+        # Explicitly passing the parameter, RequestType & QueuePriority
+        createOptions = ET_CreateOptions(RequestType, QueuePriority)
+        createOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"EmailAddress": "xyz@exacttarget.com", "SubscriberKey": "xyz@exacttarget", "Status": "Active"}
+        subscriber.createOptions = createOptions
+        results = subscriber.post()
+        print ('Post Status: ' + str(results.status))
+        print ('Code: ' + str(results.code))
+        print ('Message: ' + str(results.message))
+        print ('Result Count: ' + str(len(results.results)))
+        print ('Results: ' + str(results.results))
+
+        # Asynchronous Soap request to update Subscriber, Patch method
+        ############################################################
+
+        # Explicitly passing the parameter, RequestType & QueuePriority
+        updateOptions = ET_UpdateOptions(RequestType, QueuePriority)
+        updateOptions = ET_UpdateOptions()
+        updateOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"Status": "Unsubscribed", "EmailAddress": "xyzUpdated@exacttarget.com",
+                            "SubscriberKey": "xyz@exacttarget"}
+        subscriber.updateOptions = updateOptions
+        results = subscriber.patch()
+        print ('Patch Status: ' + str(results.status))
+        print ('Code: ' + str(results.code))
+        print ('Message: ' + str(results.message))
+        print ('Result Count: ' + str(len(results.results)))
+        print ('Results: ' + str(results.results))
+
+        # Asynchronous Soap request to delete Subscriber, Delete method
+        ###############################################################
+
+        # Explicitly pasinf the parameter, RequestType & QueuePriority
+        deleteOptions = ET_DeleteOptions(RequestType, QueuePriority)
+        deleteOptions.auth_stub = myClient
+        subscriber = ET_Subscriber()
+        subscriber.auth_stub = myClient
+        subscriber.props = {"SubscriberKey": "xyz@exacttarget"}
+        subscriber.delOptions = deleteOptions
+        results = subscriber.delete()
+        print ('Delete Status: ' + str(results.status))
+        print ('Code: ' + str(results.code))
+        print ('Message: ' + str(results.message))
+        print ('Results Length: ' + str(len(results.results)))
+        print ('Results: ' + str(deleteResponse.results))
+
 
 except Exception as e:
-    print 'Caught exception: ' + e.message
-    print e
+    print ('Caught exception: ' + e.message)
+    print (e)

@@ -4,14 +4,14 @@ with open('README.md') as f:
     readme = f.read()
 
 setup(
-    version='1.0.0',
-    name='FuelSDK',
+    version='1.1.0',
+    name='MarketingCloudSDK',
     description='ExactTarget Fuel SDK for Python',
     long_description=readme,
     author='ExactTarget',
     author_email='code@exacttarget.com',
     py_modules=['ET_Client'],
-    packages=['FuelSDK'],
+    packages=['MarketingCloudSDK'],
     url='https://github.com/ExactTarget/FuelSDK-Python',
     license='MIT',
     install_requires=[

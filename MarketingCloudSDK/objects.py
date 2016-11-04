@@ -1,4 +1,4 @@
-from FuelSDK.rest import ET_CUDSupport,ET_CUDSupportRest,ET_GetSupport,ET_Get,ET_Patch,ET_Post,ET_Delete,ET_Configure,ET_Describe
+from MarketingCloudSDK.rest import ET_CUDSupport,ET_CUDSupportRest,ET_GetSupport,ET_Get,ET_Patch,ET_Post,ET_Delete,ET_Configure,ET_Describe
 
 ########
 ##
@@ -143,14 +143,67 @@ class ET_Email(ET_CUDSupport):
 class ET_TriggeredSend(ET_CUDSupport):
     subscribers = None
     attributes  = None
+    createOptions = None
     def __init__(self):
         super(ET_TriggeredSend, self).__init__()
         self.obj_type = 'TriggeredSendDefinition'
 
     def send(self):
-        tscall = {"TriggeredSendDefinition":self.props, "Subscribers" : self.subscribers, "Attributes": self.attributes }
-        self.obj = ET_Post(self.auth_stub, "TriggeredSend", tscall)
+        tscall = {"TriggeredSendDefinition":self.props, "Subscribers" : self.subscribers, "Attributes": self.attributes}
+        cObj = self.createOptions
+        self.obj = ET_Post(self.auth_stub, "TriggeredSend", tscall, None, cObj)
         return self.obj
+
+class ET_CreateOptions(ET_CUDSupport):
+    sendResponseTo = None
+    cOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None, saveOptions=None):
+        super(ET_CreateOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx", "RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'CreateOptions'
+        self.cOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority, "SaveOptions": saveOptions}
+
+class ET_UpdateOptions(ET_CUDSupport):
+    sendResponseTo = None
+    uOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None, saveAction=None):
+        super(ET_UpdateOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx","RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'UpdateOptions'
+        self.uOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority, "SaveOptions": saveAction}
+
+class ET_DeleteOptions(ET_CUDSupport):
+    sendResponseTo = None
+    dOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None):
+        super(ET_DeleteOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx","RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'DeleteOptions'
+        self.dOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+
+class ET_ConfigureOptions(ET_CUDSupport):
+    sendResponseTo = None
+    configOptions = None
+
+    def __init__(self, requestType="Synchronous", queuePriority=None):
+        super(ET_ConfigureOptions, self).__init__()
+        self.sendResponseTo = {"ResponseType": "HTTPPost", "ResponseAddress": "http://error.domain.com/service.aspx", "RespondWhen": "OnError", "IncludeResults": "true", "IncludeObjects": "true"}
+        self.obj_type = 'ConfigureOptions'
+        self.configOptions = {"SendResponseTo": self.sendResponseTo, "RequestType": requestType, "QueuePriority": queuePriority}
+
+class ET_SaveOption(ET_CUDSupport):
+    saveOptions = None
+    properties = None
+
+    def __init__(self, saveAction="Default"):
+        super(ET_SaveOption, self).__init__()
+        self.obj_type = 'SaveOption'
+        self.saveAction = {"SaveAction": saveAction, "PropertyName": "*"}
+        self.saveOptions = {"SaveOption": self.saveAction}
+        self.saveOption = {"SaveOptions": saveAction}
 
 
 class ET_Subscriber(ET_CUDSupport):
@@ -273,6 +326,7 @@ class ET_DataExtension_Row(ET_CUDSupport):
         return obj
         
     def post(self):
+        cDataECtensionRow = self.createOptions
         self.getCustomerKey()
         originalProps = self.props
         
@@ -297,18 +351,19 @@ class ET_DataExtension_Row(ET_CUDSupport):
             currentFields = []
             currentProp = {}
                 
-            for key, value in self.props.iteritems():
+            for key, value in self.props.items():
                 currentFields.append({"Name" : key, "Value" : value})
 
             currentProp['CustomerKey'] = self.CustomerKey
             currentProp['Properties'] = {}
-            currentProp['Properties']['Property'] = currentFields   
+            currentProp['Properties']['Property'] = currentFields
 
-        obj = ET_Post(self.auth_stub, self.obj_type, currentProp)   
+        obj = ET_Post(self.auth_stub, self.obj_type, currentProp, None, cDataECtensionRow)
         self.props = originalProps
         return obj
         
-    def patch(self): 
+    def patch(self):
+        upExProp = self.updateOptions
         self.getCustomerKey()
 
         if type(self.props) is list:
@@ -331,17 +386,18 @@ class ET_DataExtension_Row(ET_CUDSupport):
             currentFields = []
             currentProp = {}
             
-            for key, value in self.props.iteritems():
+            for key, value in self.props.items():
                 currentFields.append({"Name" : key, "Value" : value})
             
             currentProp['CustomerKey'] = self.CustomerKey
             currentProp['Properties'] = {}
             currentProp['Properties']['Property'] = currentFields
-            
-        obj = ET_Patch(self.auth_stub, self.obj_type, currentProp)
+
+        obj = ET_Patch(self.auth_stub, self.obj_type, currentProp, None, upExProp)
         return obj
     
-    def delete(self): 
+    def delete(self):
+        deExProp = self.delOptions
         self.getCustomerKey()
 
         if type(self.props) is list:
@@ -364,14 +420,14 @@ class ET_DataExtension_Row(ET_CUDSupport):
             currentFields = []
             currentProp = {}
                 
-            for key, value in self.props.iteritems():
+            for key, value in self.props.items():
                 currentFields.append({"Name" : key, "Value" : value})
     
             currentProp['CustomerKey'] = self.CustomerKey
             currentProp['Keys'] = {}
             currentProp['Keys']['Key'] = currentFields
-            
-        obj = ET_Delete(self.auth_stub, self.obj_type, currentProp)
+
+        obj = ET_Delete(self.auth_stub, self.obj_type, currentProp, None, deExProp)
         return obj
     
     def getCustomerKey(self):

@@ -5,7 +5,7 @@ class _PropertyAppender(Appender):
     """
     A L{Property} appender.
 
-    Patched for FuelSDK
+    Patched for MarketingCloudSDK
     """
         
     def append(self, parent, content):
@@ -30,7 +30,7 @@ def _bodycontent(self, method, args, kwargs):
     # it is I{bare}.  Otherwise, it is I{wrapped}.
     #
 
-    Patched for FuelSDK
+    Patched for MarketingCloudSDK
     """
     if not len(method.soap.input.body.parts):
         return ()
